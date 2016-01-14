@@ -152,6 +152,49 @@ local function new(initialElements, getElementHash, compareElements)
 		end
 	end
 
+	local function intersectElements(a, b)
+		assert(type(a)=='table', 'Invalid argument type on the left side')
+		assert(type(b)=='table', 'Invalid argument type on the right side')
+		local out = {}
+
+		if type(a.has)=='function' and type(b.has)=='function' then
+			local has = a.has
+
+			if (a.checkSum() ~= b.checkSum()) then
+				for _,v in ipairs(b) do
+					if has(v) then
+						ti(out, v)
+					end
+				end
+				return new2(out, a, b)
+	    	else
+	    		return a()
+	    	end
+		elseif type(a.has)=='function' then
+			local has = a.has
+
+			for _,v in ipairs(b) do
+				if has(v) then
+					ti(out, v)
+				end
+			end
+
+			return new(out, a.hash, a.compare)
+		elseif type(b.has)=='function' then
+			local has = b.has
+
+			for _,v in ipairs(a) do
+				if has(v) then
+					ti(out, v)
+				end
+			end
+
+			return new(out, b.hash, b.compare)
+		else
+			error('Invalid arguments')
+		end
+	end
+
 	local function subtractElements(a, b)
 		assert(type(a)=='table', 'Invalid argument type on the left side')
 		assert(type(b)=='table', 'Invalid argument type on the right side')
@@ -195,60 +238,6 @@ local function new(initialElements, getElementHash, compareElements)
 				local hash = getElementHash(v)
 
 				if type(index[hash])~='number' then
-					ti(out, v)
-				end
-			end
-
-			return new(out, b.hash, b.compare)
-		else
-			error('Invalid arguments')
-		end
-	end
-
-	local function commonElements(a, b)
-		assert(type(a)=='table', 'Invalid argument type on the left side')
-		assert(type(b)=='table', 'Invalid argument type on the right side')
-		local out = {}
-
-		if type(a.has)=='function' and type(b.has)=='function' then
-			if (a.checkSum() ~= b.checkSum()) then
-				for _,v in ipairs(a) do
-					if b.has(v) then
-						ti(out, v)
-					end
-				end	
-			end
-
-			return new2(out, a, b)
-		elseif type(a.has)=='function' then
-			local index = {}
-			local getElementHash = a.hash
-
-			for i,v in ipairs(b) do
-				index[getElementHash(v)] = i
-			end
-
-			for _,v in ipairs(a) do
-				local hash = getElementHash(v)
-
-				if type(index[hash])=='number' then
-					ti(out, v)
-				end
-			end
-
-			return new(out, a.hash, a.compare)
-		elseif type(b.has)=='function' then
-			local index = {}
-			local getElementHash = b.hash
-
-			for i,v in ipairs(a) do
-				index[getElementHash(v)] = i
-			end
-
-			for _,v in ipairs(b) do
-				local hash = getElementHash(v)
-
-				if type(index[hash])=='number' then
 					ti(out, v)
 				end
 			end
@@ -346,7 +335,7 @@ local function new(initialElements, getElementHash, compareElements)
 
 		__add = addElements,
 		__sub = subtractElements,
-		__mul = commonElements,
+		__mul = intersectElements,
 		__div = operateOnElements,
 		__mod = filterElements,
 		__pairs = pairsIterator,

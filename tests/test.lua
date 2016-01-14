@@ -26,22 +26,24 @@ local B = set.new {gen {1,2,1}, gen {1,2,3}, gen {1,1,1}, gen {2,2,3}}
 local C = A - B
 B = B + A + {gen {3,1,1}}
 
+local D = A * B
+
 -- conditional filter AND
-local D = B.whereAnd {x = 1, y = 2}
+local E = B.whereAnd {x = 1, y = 2}
 -- conditional filter OR
-local E = B.whereOr {x = 1, y = 2}
+local F = B.whereOr {x = 1, y = 2}
 -- custom conditional filter
-local F = B % function(element)
+local G = B % function(element)
 	return element.x >= 2
 end
 
 assert(#A == 3)
 assert(#B == 6)
 assert(#C == 1)
-assert(#D == 2)
-assert(#E == 4)
-assert(#F == 3)
+assert(#E == 2)
+assert(#F == 4)
+assert(#G == 3)
 
-for k,v in ipairs(B) do
+for k,v in ipairs(D) do
 	print(k, v)
 end
